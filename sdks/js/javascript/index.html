@@ -19,6 +19,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
   <script type="text/javascript" src="../../../js/highlight.pack.js"></script>
   <script src="../../../js/theme.js"></script>
+  <script src="../../../sdks/js/example-bucket-policy.js"></script>
   <script src="../../../sdks/js/example-list-buckets.js"></script>
 
   <style>
@@ -118,7 +119,7 @@
 <pre><code>npm install aws-sdk
 </code></pre>
 
-<h3 id="example">Example</h3>
+<h3 id="example-getservice">Example <code>GetService</code></h3>
 <pre><code>var AWS = require('aws-sdk');
 
 var config = {
@@ -142,6 +143,71 @@ s3.listBuckets(function(err, data) {
 </code></pre>
 
 <p>Grab it here <a href="https://github.com/Minio-io/mc/blob/master/docs/sdks/js/example-list-buckets.js">example-list-buckets.js</a></p>
+<h3 id="example-bucketpolicy">Example <code>BucketPolicy</code></h3>
+<pre><code>var AWS = require('aws-sdk');
+
+var config = {
+  accessKeyId: &quot;MINIO_ACCESS_ID&quot;,
+  secretAccessKey: &quot;MINIO_SECRET_ID&quot;,
+  endpoint: &quot;localhost:9000&quot;,
+  region: &quot;&quot;,
+  sslEnabled: false,
+  s3ForcePathStyle: true
+};
+
+AWS.config.update(config);
+
+var s3 = new AWS.S3();
+
+var statement = {
+  Sid: &quot;ExampleStatemenent1&quot;,
+  Effect: &quot;Allow&quot;,
+  Principal: {
+    AWS: &quot;minio::Account-Id:user/Dave&quot;
+  },
+  Action: [
+    &quot;s3.ListBucket&quot;,
+    &quot;s3.GetObject&quot;,
+    &quot;s3.PutObject&quot;,
+  ],
+  Resource: [
+    &quot;minio:::examplebucket&quot;
+  ]
+}
+
+var policy = {
+  Version: &quot;2012-10-20&quot;,
+  Statement: [statement],
+}
+
+var params = {
+  Bucket: 'new-bucket',
+  Policy: JSON.stringify(policy),
+}
+
+s3.putBucketPolicy(params, function(err, data) {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log(data);
+  }
+});
+
+var params = {
+  Bucket: 'new-bucket'
+};
+
+s3.getBucketPolicy(params, function(err, data) {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log(data);
+  }
+});
+
+</code></pre>
+
+<p>Grab it here <a href="https://github.com/Minio-io/mc/blob/master/docs/sdks/js/example-bucket-policy.js">example-bucket-policy.js</a></p>
 
             </div>
           </div>
