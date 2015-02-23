@@ -20,7 +20,7 @@
   <script type="text/javascript" src="../../../js/highlight.pack.js"></script>
   <script src="../../../js/theme.js"></script>
   <script src="../../../sdks/js/example-bucket-policy.js"></script>
-  <script src="../../../sdks/js/example-list-buckets.js"></script>
+  <script src="../../../sdks/js/example-list.js"></script>
 
   <style>
     body {font-size: 90%;}
@@ -119,15 +119,17 @@
 <pre><code>npm install aws-sdk
 </code></pre>
 
-<h3 id="example-getservice">Example <code>GetService</code></h3>
-<pre><code>var AWS = require('aws-sdk');
+<h3 id="example-getservice-and-listobjects">Example <code>GetService</code> and <code>ListObjects</code></h3>
+<pre><code>'use strict'
+
+var AWS = require('aws-sdk');
 
 var config = {
-  accessKeyId: &quot;YOUR_MINIO_ACCESS_ID&quot;,
-  secretAccessKey: &quot;YOUR_MINIO_SECRET_KEY&quot;,
+  accessKeyId: &quot;MINIO_ACCESS_ID&quot;,
+  secretAccessKey: &quot;MINIO_SECRET_ID&quot;,
   endpoint: &quot;localhost:9000&quot;,
   region: &quot;&quot;,
-  sslEnabled: false
+  sslEnabled: false,
 };
 
 AWS.config.update(config);
@@ -140,11 +142,23 @@ s3.listBuckets(function(err, data) {
     console.log(data); // successful response
   }
 });
+
+
+var params = {
+  Bucket: &quot;your-bucket&quot;
+};
+
+s3.listObjects(params, function(err, data) {
+  if (err) console.log(err);
+  else console.log(data);
+});
 </code></pre>
 
-<p>Grab it here <a href="https://github.com/Minio-io/mc/blob/master/docs/sdks/js/example-list-buckets.js">example-list-buckets.js</a></p>
-<h3 id="example-bucketpolicy">Example <code>BucketPolicy</code></h3>
-<pre><code>var AWS = require('aws-sdk');
+<p>Grab it here <a href="https://github.com/Minio-io/mc/blob/master/docs/sdks/js/example-list.js">example-list.js</a></p>
+<h3 id="example-getbucketpolicy-and-putbucketpolicy">Example <code>GetBucketPolicy</code> and <code>PutBucketPolicy</code></h3>
+<pre><code>'use strict'
+
+var AWS = require('aws-sdk');
 
 var config = {
   accessKeyId: &quot;MINIO_ACCESS_ID&quot;,
@@ -152,7 +166,6 @@ var config = {
   endpoint: &quot;localhost:9000&quot;,
   region: &quot;&quot;,
   sslEnabled: false,
-  s3ForcePathStyle: true
 };
 
 AWS.config.update(config);
@@ -163,12 +176,12 @@ var statement = {
   Sid: &quot;ExampleStatemenent1&quot;,
   Effect: &quot;Allow&quot;,
   Principal: {
-    AWS: &quot;minio::Account-Id:user/Dave&quot;
+    AWS: &quot;minio::1111111:murphy&quot;
   },
   Action: [
-    &quot;s3.ListBucket&quot;,
-    &quot;s3.GetObject&quot;,
-    &quot;s3.PutObject&quot;,
+    &quot;s3:ListBucket&quot;,
+    &quot;s3:GetObject&quot;,
+    &quot;s3:PutObject&quot;,
   ],
   Resource: [
     &quot;minio:::examplebucket&quot;
@@ -181,7 +194,7 @@ var policy = {
 }
 
 var params = {
-  Bucket: 'new-bucket',
+  Bucket: 'newbucket',
   Policy: JSON.stringify(policy),
 }
 
@@ -194,7 +207,7 @@ s3.putBucketPolicy(params, function(err, data) {
 });
 
 var params = {
-  Bucket: 'new-bucket'
+  Bucket: 'newbucket'
 };
 
 s3.getBucketPolicy(params, function(err, data) {
@@ -204,7 +217,6 @@ s3.getBucketPolicy(params, function(err, data) {
     console.log(data);
   }
 });
-
 </code></pre>
 
 <p>Grab it here <a href="https://github.com/Minio-io/mc/blob/master/docs/sdks/js/example-bucket-policy.js">example-bucket-policy.js</a></p>
