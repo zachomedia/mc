@@ -105,7 +105,7 @@
           <div role="main">
             <div class="section">
               <h1 id="minio-client">Minio Client</h1>
-<p>mc - unified command line interface for Minio Object Storage compatible with Amazon S3 API released under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache license v2</a>.</p>
+<p>mc - unified command line interface for Minio and S3 released under <a href="././LICENSE">Apache license v2</a>.</p>
 <h2 id="install">Install</h2>
 <pre><code># go get github.com/minio-io/mc
 </code></pre>
@@ -113,7 +113,7 @@
 <h2 id="usage">Usage</h2>
 <h3 id="commands">Commands</h3>
 <pre><code>NAME:
-   mc - Unified command line interface for Minio Object Storage
+   mc - unified command line interface for Minio and S3
 
 USAGE:
    mc [global options] command [command options] [arguments...]
@@ -135,6 +135,23 @@ COMMANDS:
 GLOBAL OPTIONS:
    --help, -h           show help
    --version, -v        print the version
+</code></pre>
+
+<h2 id="contribute">Contribute</h2>
+<p><a href="contributing/">Contribute to mc</a></p>
+<h3 id="enable-bash-completion">Enable bash completion</h3>
+<p>To generate bash completion for <code>mc</code> all you have to do is</p>
+<pre><code>$ mc --get-bash-completion
+
+Configuration written to /home/user/.minio/mc/mc.bash_completion
+
+$ source ${HOME}/.minio/mc/mc.bash_completion
+$ echo 'source ${HOME}/.minio/mc/mc.bash_completion' &gt;&gt; ${HOME}/.bashrc
+
+</code></pre>
+
+<pre><code>$ mc &lt;TAB&gt;&lt;TAB&gt;
+configure  cp         h          help       ls         mb         sync
 </code></pre>
 
 
