@@ -125,11 +125,12 @@
 var AWS = require('aws-sdk');
 
 var config = {
-  accessKeyId: &quot;MINIO_ACCESS_ID&quot;,
-  secretAccessKey: &quot;MINIO_SECRET_ID&quot;,
+  accessKeyId: &quot;ECHB22VEKH5I0X4K2T7P&quot;,
+  secretAccessKey: &quot;IiqhtimkamPZJtV4J8jztm74LpdTSbn7RUASyPzjje2+pfhLJ7nFRg==&quot;,
   endpoint: &quot;localhost:9000&quot;,
   region: &quot;&quot;,
   sslEnabled: false,
+  s3ForcePathStyle: true,
 };
 
 AWS.config.update(config);
@@ -145,7 +146,7 @@ s3.listBuckets(function(err, data) {
 
 
 var params = {
-  Bucket: &quot;your-bucket&quot;
+  Bucket: &quot;docs&quot;
 };
 
 s3.listObjects(params, function(err, data) {
@@ -161,11 +162,12 @@ s3.listObjects(params, function(err, data) {
 var AWS = require('aws-sdk');
 
 var config = {
-  accessKeyId: &quot;MINIO_ACCESS_ID&quot;,
-  secretAccessKey: &quot;MINIO_SECRET_ID&quot;,
+  accessKeyId: &quot;ECHB22VEKH5I0X4K2T7P&quot;,
+  secretAccessKey: &quot;IiqhtimkamPZJtV4J8jztm74LpdTSbn7RUASyPzjje2+pfhLJ7nFRg==&quot;,
   endpoint: &quot;localhost:9000&quot;,
   region: &quot;&quot;,
   sslEnabled: false,
+  s3ForcePathStyle: true,
 };
 
 AWS.config.update(config);
@@ -179,9 +181,9 @@ var statement = {
     AWS: &quot;minio::1111111:murphy&quot;
   },
   Action: [
-    &quot;s3:ListBucket&quot;,
-    &quot;s3:GetObject&quot;,
-    &quot;s3:PutObject&quot;,
+    &quot;minio:ListBucket&quot;,
+    &quot;minio:GetObject&quot;,
+    &quot;minio:PutObject&quot;,
   ],
   Resource: [
     &quot;minio:::examplebucket&quot;
@@ -194,7 +196,7 @@ var policy = {
 }
 
 var params = {
-  Bucket: 'newbucket',
+  Bucket: 'docs',
   Policy: JSON.stringify(policy),
 }
 
@@ -207,7 +209,7 @@ s3.putBucketPolicy(params, function(err, data) {
 });
 
 var params = {
-  Bucket: 'newbucket'
+  Bucket: 'docs'
 };
 
 s3.getBucketPolicy(params, function(err, data) {
