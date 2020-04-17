@@ -1,0 +1,8 @@
+title: MC
+description: Unified command line interface for Minio Object Storage
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
