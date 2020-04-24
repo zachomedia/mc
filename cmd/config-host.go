@@ -46,15 +46,16 @@ func mainConfigHost(ctx *cli.Context) error {
 
 // hostMessage container for content message structure
 type hostMessage struct {
-	op          string
-	prettyPrint bool
-	Status      string `json:"status"`
-	Alias       string `json:"alias"`
-	URL         string `json:"URL"`
-	AccessKey   string `json:"accessKey,omitempty"`
-	SecretKey   string `json:"secretKey,omitempty"`
-	API         string `json:"api,omitempty"`
-	Lookup      string `json:"lookup,omitempty"`
+	op           string
+	prettyPrint  bool
+	Status       string `json:"status"`
+	Alias        string `json:"alias"`
+	URL          string `json:"URL"`
+	AccessKey    string `json:"accessKey,omitempty"`
+	SecretKey    string `json:"secretKey,omitempty"`
+	SessionToken string `json:"sessionToken,omitempty"`
+	API          string `json:"api,omitempty"`
+	Lookup       string `json:"lookup,omitempty"`
 }
 
 // Print the config information of one alias, when prettyPrint flag
@@ -69,10 +70,11 @@ func (h hostMessage) String() string {
 			Row{"URL", "URL"},
 			Row{"AccessKey", "AccessKey"},
 			Row{"SecretKey", "SecretKey"},
+			Row{"SessionToken", "SessionToken"},
 			Row{"API", "API"},
 			Row{"Lookup", "Lookup"},
 		)
-		return t.buildRecord(h.Alias, h.URL, h.AccessKey, h.SecretKey, h.API, h.Lookup)
+		return t.buildRecord(h.Alias, h.URL, h.AccessKey, h.SecretKey, h.SessionToken, h.API, h.Lookup)
 	case "remove":
 		return console.Colorize("HostMessage", "Removed `"+h.Alias+"` successfully.")
 	case "add":

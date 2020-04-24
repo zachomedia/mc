@@ -67,7 +67,7 @@ EXAMPLES:
      {{.Prompt}} {{.HelpName}} myminio http://localhost:9000 minio minio123
      {{.EnableHistory}}
 
-  2. Add MinIO service under "myminio" alias, to use dns style bucket lookup. For security reasons 
+  2. Add MinIO service under "myminio" alias, to use dns style bucket lookup. For security reasons
      turn off bash history momentarily.
      {{.DisableHistory}}
      {{.Prompt}} {{.HelpName}} myminio http://localhost:9000 minio minio123 --api "s3v4" --lookup "dns"
@@ -96,7 +96,7 @@ EXAMPLES:
 func checkConfigHostAddSyntax(ctx *cli.Context, accessKey string, secretKey string) {
 	args := ctx.Args()
 	argsNr := len(args)
-	if argsNr > 4 || argsNr < 2 {
+	if argsNr > 5 || argsNr < 2 {
 		fatalIf(errInvalidArgument().Trace(ctx.Args().Tail()...),
 			"Incorrect number of arguments for host add command.")
 	}
@@ -147,28 +147,30 @@ func addHost(alias string, hostCfgV9 hostConfigV9) {
 	fatalIf(err.Trace(alias), "Unable to update hosts in config version `"+mustGetMcConfigPath()+"`.")
 
 	printMsg(hostMessage{
-		op:        "add",
-		Alias:     alias,
-		URL:       hostCfgV9.URL,
-		AccessKey: hostCfgV9.AccessKey,
-		SecretKey: hostCfgV9.SecretKey,
-		API:       hostCfgV9.API,
-		Lookup:    hostCfgV9.Lookup,
+		op:           "add",
+		Alias:        alias,
+		URL:          hostCfgV9.URL,
+		AccessKey:    hostCfgV9.AccessKey,
+		SecretKey:    hostCfgV9.SecretKey,
+		SessionToken: hostCfgV9.SessionToken,
+		API:          hostCfgV9.API,
+		Lookup:       hostCfgV9.Lookup,
 	})
 }
 
 // probeS3Signature - auto probe S3 server signature: issue a Stat call
 // using v4 signature then v2 in case of failure.
-func probeS3Signature(accessKey, secretKey, url string) (string, *probe.Error) {
+func probeS3Signature(accessKey, secretKey, sessionToken, url string) (string, *probe.Error) {
 	probeBucketName := randString(60, rand.NewSource(time.Now().UnixNano()), "probe-bucket-sign-")
 	// Test s3 connection for API auto probe
 	s3Config := &Config{
 		// S3 connection parameters
-		Insecure:  globalInsecure,
-		AccessKey: accessKey,
-		SecretKey: secretKey,
-		HostURL:   urlJoinPath(url, probeBucketName),
-		Debug:     globalDebug,
+		Insecure:     globalInsecure,
+		AccessKey:    accessKey,
+		SecretKey:    secretKey,
+		SessionToken: sessionToken,
+		HostURL:      urlJoinPath(url, probeBucketName),
+		Debug:        globalDebug,
 	}
 
 	probeSignatureType := func(stype string) (string, *probe.Error) {
@@ -209,13 +211,14 @@ func probeS3Signature(accessKey, secretKey, url string) (string, *probe.Error) {
 
 // BuildS3Config constructs an S3 Config and does
 // signature auto-probe when needed.
-func BuildS3Config(url, accessKey, secretKey, api, lookup string) (*Config, *probe.Error) {
+func BuildS3Config(url, accessKey, secretKey, sessionToken, api, lookup string) (*Config, *probe.Error) {
 
 	s3Config := NewS3Config(url, &hostConfigV9{
-		AccessKey: accessKey,
-		SecretKey: secretKey,
-		URL:       url,
-		Lookup:    lookup,
+		AccessKey:    accessKey,
+		SecretKey:    secretKey,
+		SessionToken: sessionToken,
+		URL:          url,
+		Lookup:       lookup,
 	})
 
 	// If api is provided we do not auto probe signature, this is
@@ -225,9 +228,9 @@ func BuildS3Config(url, accessKey, secretKey, api, lookup string) (*Config, *pro
 		return s3Config, nil
 	}
 	// Probe S3 signature version
-	api, err := probeS3Signature(accessKey, secretKey, url)
+	api, err := probeS3Signature(accessKey, secretKey, sessionToken, url)
 	if err != nil {
-		return nil, err.Trace(url, accessKey, secretKey, api, lookup)
+		return nil, err.Trace(url, accessKey, secretKey, sessionToken, api, lookup)
 	}
 
 	s3Config.Signature = api
@@ -235,10 +238,11 @@ func BuildS3Config(url, accessKey, secretKey, api, lookup string) (*Config, *pro
 	return s3Config, nil
 }
 
-// fetchHostKeys - returns the user accessKey and secretKey
-func fetchHostKeys(args cli.Args) (string, string) {
+// fetchHostKeys - returns the user accessKey, secretKey and sessionToken
+func fetchHostKeys(args cli.Args) (string, string, string) {
 	accessKey := ""
 	secretKey := ""
+	sessionToken := ""
 	console.SetColor(cred, color.New(color.FgYellow, color.Italic))
 	isTerminal := terminal.IsTerminal(int(os.Stdin.Fd()))
 	reader := bufio.NewReader(os.Stdin)
@@ -269,7 +273,21 @@ func fetchHostKeys(args cli.Args) (string, string) {
 		secretKey = args.Get(3)
 	}
 
-	return accessKey, secretKey
+	if argsNr == 2 || argsNr == 3 || argsNr == 4 {
+		if isTerminal {
+			fmt.Printf("%s", console.Colorize(cred, "Enter Session Token (blank for none): "))
+			bytePassword, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
+			fmt.Printf("\n")
+			sessionToken = string(bytePassword)
+		} else {
+			value, _, _ := reader.ReadLine()
+			sessionToken = string(value)
+		}
+	} else {
+		sessionToken = args.Get(4)
+	}
+
+	return accessKey, secretKey, sessionToken
 }
 
 func mainConfigHostAdd(ctx *cli.Context) error {
@@ -281,18 +299,19 @@ func mainConfigHostAdd(ctx *cli.Context) error {
 		api    = ctx.String("api")
 		lookup = ctx.String("lookup")
 	)
-	accessKey, secretKey := fetchHostKeys(args)
+	accessKey, secretKey, sessionToken := fetchHostKeys(args)
 	checkConfigHostAddSyntax(ctx, accessKey, secretKey)
 
-	s3Config, err := BuildS3Config(url, accessKey, secretKey, api, lookup)
+	s3Config, err := BuildS3Config(url, accessKey, secretKey, sessionToken, api, lookup)
 	fatalIf(err.Trace(ctx.Args()...), "Unable to initialize new config from the provided credentials.")
 
 	addHost(ctx.Args().Get(0), hostConfigV9{
-		URL:       s3Config.HostURL,
-		AccessKey: s3Config.AccessKey,
-		SecretKey: s3Config.SecretKey,
-		API:       s3Config.Signature,
-		Lookup:    lookup,
+		URL:          s3Config.HostURL,
+		AccessKey:    s3Config.AccessKey,
+		SecretKey:    s3Config.SecretKey,
+		SessionToken: s3Config.SessionToken,
+		API:          s3Config.Signature,
+		Lookup:       lookup,
 	}) // Add a host with specified credentials.
 	return nil
 }

@@ -76,6 +76,7 @@ func mainConfigHostList(ctx *cli.Context) error {
 	console.SetColor("URL", color.New(color.FgYellow))
 	console.SetColor("AccessKey", color.New(color.FgCyan))
 	console.SetColor("SecretKey", color.New(color.FgCyan))
+	console.SetColor("SessionToken", color.New(color.FgCyan))
 	console.SetColor("API", color.New(color.FgBlue))
 	console.SetColor("Lookup", color.New(color.FgCyan))
 
@@ -100,6 +101,7 @@ func printHosts(hosts ...hostMessage) {
 		if host.AccessKey == "" || host.SecretKey == "" {
 			host.AccessKey = ""
 			host.SecretKey = ""
+			host.SessionToken = ""
 			host.API = ""
 		}
 		printMsg(host)
@@ -122,14 +124,15 @@ func listHosts(alias string) {
 	if alias != "" {
 		if v, ok := conf.Hosts[alias]; ok {
 			printHosts(hostMessage{
-				op:          "list",
-				prettyPrint: false,
-				Alias:       alias,
-				URL:         v.URL,
-				AccessKey:   v.AccessKey,
-				SecretKey:   v.SecretKey,
-				API:         v.API,
-				Lookup:      v.Lookup,
+				op:           "list",
+				prettyPrint:  false,
+				Alias:        alias,
+				URL:          v.URL,
+				AccessKey:    v.AccessKey,
+				SecretKey:    v.SecretKey,
+				SessionToken: v.SessionToken,
+				API:          v.API,
+				Lookup:       v.Lookup,
 			})
 			return
 		}
@@ -139,14 +142,15 @@ func listHosts(alias string) {
 	var hosts []hostMessage
 	for k, v := range conf.Hosts {
 		hosts = append(hosts, hostMessage{
-			op:          "list",
-			prettyPrint: true,
-			Alias:       k,
-			URL:         v.URL,
-			AccessKey:   v.AccessKey,
-			SecretKey:   v.SecretKey,
-			API:         v.API,
-			Lookup:      v.Lookup,
+			op:           "list",
+			prettyPrint:  true,
+			Alias:        k,
+			URL:          v.URL,
+			AccessKey:    v.AccessKey,
+			SecretKey:    v.SecretKey,
+			SessionToken: v.SessionToken,
+			API:          v.API,
+			Lookup:       v.Lookup,
 		})
 	}
 
